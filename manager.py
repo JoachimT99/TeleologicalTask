@@ -36,8 +36,7 @@ class ExperimentManager(object):
         self.win.flip()
 
     def set_intertrial_scene(self):
-        cross = visual.Circle(self.win, radius=100, fillColor=(1, 1, 1))
-        self.scene = InterTrialScene(self, cross)
+        self.scene = InterTrialScene(self.win, self, constants.INTERTRIAL_TEXT)
 
     def end_experiment(self):
         self.isRunning = False

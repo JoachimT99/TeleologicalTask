@@ -22,7 +22,7 @@ class ResponseScene(object):
     def update(self):
         self.current_frame += 1
         if self.current_frame >= self.max_frame:
-            self.manager.set_feedback_scene(failed=True)
+            self.manager.set_intertrial_scene()
         self.check_input()
         self.draw()
 

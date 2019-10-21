@@ -4,9 +4,9 @@ from unittest.mock import Mock, patch
 from feedbackScene import FeedbackScene
 
 @pytest.fixture
-@patch("feedbackScene.random.randint")
+@patch("feedbackScene.random.randrange")
 def scene(random_mock):
-    random_mock.return_value = 4
+    random_mock.return_value = 40
     return FeedbackScene(Mock(), Mock(), Mock())
 
 def test_update(scene):

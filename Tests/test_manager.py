@@ -26,18 +26,12 @@ def test_start_experiment(mock, manager):
 
 
 
-@patch("audioScene.Sound")
-@patch("manager.visual.Circle")
-def test_interTrialDuration(sound_mock, circle_mock, manager):
-    #Arrange
+@patch("interTrialScene.visual.TextStim")
+def test_set_intertrialScene(text_mock, manager):
     manager.set_intertrial_scene()
-    manager.scene.fixationCross = Mock()
-    #Act
-    for _ in range(60):
-        manager.update()
-    #Assert
-    assert isinstance(manager.scene, AudioScene)
-    assert manager.currentSet == 0
+    assert isinstance(manager.scene, InterTrialScene)
+
+
 
 def test_manager_data(manager):
     #Assert

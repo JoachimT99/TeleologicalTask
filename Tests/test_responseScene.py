@@ -21,7 +21,7 @@ def test_update_time_ran_out(scene):
     scene.draw = Mock()
 
     [scene.update() for _ in range(constants.FRAME_RATE * 4)]
-    scene.manager.set_feedback_scene.assert_called_once_with(failed=True)
+    scene.manager.set_intertrial_scene.assert_called_once()
     assert scene.draw.call_count == constants.FRAME_RATE * 4
 
 @patch("responseScene.event.getKeys")

@@ -8,12 +8,14 @@ class AudioScene(object):
         self.manager = manager
         self.sound = Sound(soundFile)
         self.fixationCross = fixationCross
-        self.max_frame = math.ceil(self.sound.getDuration() * constants.FRAME_RATE)
+        self.max_frame = math.ceil(self.sound.getDuration() * constants.FRAME_RATE + constants.AUDIO_DELAY * constants.FRAME_RATE)
+        self.delay_frames = math.ceil(constants.AUDIO_DELAY * constants.FRAME_RATE)
         self.current_frame = 0
-        self.sound.play()
     
     def update(self):
         self.current_frame += 1
+        if self.current_frame == self.delay_frames:
+            self.sound.play()
         if self.current_frame >= self.max_frame:
             self.manager.set_response_scene()
         self.draw()

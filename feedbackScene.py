@@ -6,7 +6,7 @@ class FeedbackScene(object):
         self.win = win
         self.manager = manager
         self.feedback = feedback
-        self.max_frame = random.randint(4, 7) * constants.FRAME_RATE
+        self.max_frame = int((random.randrange(42, 62, 2) / 10) * constants.FRAME_RATE)
         self.current_frame = 0
 
     def update(self):

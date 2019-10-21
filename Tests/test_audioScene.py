@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 from psychopy.sound import Sound
 import pytest
 import time
+import constants
 
 @pytest.fixture
 def fileMock():
@@ -15,13 +16,21 @@ def scene(sound_mock, fileMock):
     sound_mock.return_value.duration = 1
     return AudioScene(Mock(), Mock(), sound_mock, Mock())
 
+
 def test_create_audioScene(scene):
 
     assert isinstance(scene.sound, Sound)
     assert scene.sound.getDuration() == 1
-    assert scene.max_frame == 60
+    assert scene.max_frame == 60 + constants.FRAME_RATE * constants.AUDIO_DELAY
     assert scene.current_frame == 0
+    assert scene.sound.status == 0
+
+def test_audioScene_delay(scene):
+    [scene.update() for _ in range(11)]
+    assert scene.sound.status == 0   
+    scene.update() 
     assert scene.sound.status == 1
+
 
 @patch("audioScene.Sound")
 def test_update(sound_mock):
@@ -36,10 +45,10 @@ def test_update(sound_mock):
     #Assert
     manager.set_response_scene.assert_not_called()
     #Act
-    [scene.update() for _ in range(59)]
+    [scene.update() for _ in range(71)]
     #Assert
     manager.set_response_scene.assert_called_once()
-    assert scene.draw.call_count == 60
+    assert scene.draw.call_count == 72
 
 def test_draw(scene):
     scene.draw()
