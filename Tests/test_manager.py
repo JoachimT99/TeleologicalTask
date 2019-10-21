@@ -48,7 +48,8 @@ def test_manager_set_audio_scene(sound_mock, circle_mock, manager):
     assert isinstance(manager.scene, AudioScene)
 
 @patch("manager.visual.Circle")
-def test_set_response_scene(circle_mock, manager):
+@patch("responseScene.random.randrange")
+def test_set_response_scene(circle_mock, random_mock, manager):
     manager.set_response_scene()
     assert isinstance(manager.scene, ResponseScene)
 

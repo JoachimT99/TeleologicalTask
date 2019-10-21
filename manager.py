@@ -21,6 +21,7 @@ class ExperimentManager(object):
         cross = visual.Circle(self.win, radius=100, fillColor=(0, 0, 1))
         self.scene = AudioScene(self.win, self, fileName, cross)
 
+
     def set_response_scene(self):
         corAns = self.conditions[self.currentSet]["CorAns"]
         cross = visual.Circle(self.win, radius=100, fillColor=(0, 0, 1))

@@ -4,7 +4,9 @@ import pytest
 import constants
 
 @pytest.fixture
-def scene():
+@patch("responseScene.random.randrange")
+def scene(range_mock):
+    range_mock.return_value = 20
     return ResponseScene(Mock(), Mock(), 'Yes', Mock())
 
 def test_update(scene):
@@ -29,7 +31,7 @@ def test_check_input_incorrect(mock, scene):
     scene.draw = Mock()
     mock.return_value = ['k']
 
-    [scene.update() for _ in  range(constants.RESPONSE_DELAY * constants.FRAME_RATE + 1)]
+    [scene.update() for _ in  range(2 * constants.FRAME_RATE + 1)]
 
     scene.manager.set_feedback_scene.assert_called_once_with(failed=True)
 
@@ -38,7 +40,7 @@ def test_check_input_correct(mock, scene):
     scene.draw = Mock()
     mock.return_value = ['d']
 
-    [scene.update() for _ in  range(constants.RESPONSE_DELAY * constants.FRAME_RATE + 1)]
+    [scene.update() for _ in  range(2 * constants.FRAME_RATE + 1)]
 
     scene.manager.set_feedback_scene.assert_called_once_with(failed=False)
 
