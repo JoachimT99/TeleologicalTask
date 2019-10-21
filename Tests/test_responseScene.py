@@ -21,22 +21,24 @@ def test_update_time_ran_out(scene):
     scene.draw = Mock()
 
     [scene.update() for _ in range(constants.FRAME_RATE * 4)]
-    scene.manager.set_intertrial_scene.assert_called_once()
+    scene.manager.next_set.assert_called_once()
     assert scene.draw.call_count == constants.FRAME_RATE * 4
 
 @patch("responseScene.event.getKeys")
 def test_check_input_incorrect(mock, scene):
+    scene.draw = Mock()
     mock.return_value = ['k']
 
-    scene.check_input()
+    [scene.update() for _ in  range(constants.RESPONSE_DELAY * constants.FRAME_RATE + 1)]
 
     scene.manager.set_feedback_scene.assert_called_once_with(failed=True)
 
 @patch("responseScene.event.getKeys")
 def test_check_input_correct(mock, scene):
+    scene.draw = Mock()
     mock.return_value = ['d']
 
-    scene.check_input()
+    [scene.update() for _ in  range(constants.RESPONSE_DELAY * constants.FRAME_RATE + 1)]
 
     scene.manager.set_feedback_scene.assert_called_once_with(failed=False)
 
