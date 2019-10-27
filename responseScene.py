@@ -17,11 +17,11 @@ class ResponseScene(object):
 
     def check_input(self):
         keys = event.getKeys()
-        if 'd' in keys and self.failed is None:
+        if constants.TRUE_KEY in keys and self.failed is None:
             self.current_frame = 0
             self.max_frame = self.response_wait * constants.FRAME_RATE
             self.failed = self.corAns ^ True
-        elif 'k' in keys and self.failed is None:
+        elif constants.FALSE_KEY in keys and self.failed is None:
             self.current_frame = 0
             self.max_frame = self.response_wait * constants.FRAME_RATE
             self.failed = self.corAns ^ False

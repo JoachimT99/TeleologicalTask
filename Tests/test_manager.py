@@ -41,13 +41,13 @@ def test_manager_data(manager):
     assert manager.conditions[0]["wav"] == "random_file_name.wav"
 
 @patch("audioScene.Sound")
-@patch("manager.visual.Circle")
+@patch("manager.visual.ImageStim")
 def test_manager_set_audio_scene(sound_mock, circle_mock, manager):
     manager.set_audio_scene()
 
     assert isinstance(manager.scene, AudioScene)
 
-@patch("manager.visual.Circle")
+@patch("manager.visual.ImageStim")
 @patch("responseScene.random.randrange")
 def test_set_response_scene(circle_mock, random_mock, manager):
     manager.set_response_scene()
@@ -58,13 +58,13 @@ def test_set_response_scene(circle_mock, random_mock, manager):
 def test_set_feedback_scene(rect_mock, manager):
     manager.set_feedback_scene()
     assert isinstance(manager.scene, FeedbackScene)
-    rect_mock.assert_called_once_with(ANY, height=ANY, width=ANY, fillColor=(0, 1, 0))
+    rect_mock.assert_called_once_with(ANY, height=ANY, width=ANY, fillColor=(-1, 1, -1), lineColor=(-1, 1, -1))
 
 @patch("manager.visual.Rect")
 def test_set_feedback_scene_failed(rect_mock, manager):
     manager.set_feedback_scene(failed=True)
     assert isinstance(manager.scene, FeedbackScene)
-    rect_mock.assert_called_once_with(ANY, height=ANY, width=ANY, fillColor=(1, 0, 0))
+    rect_mock.assert_called_once_with(ANY, height=ANY, width=ANY, fillColor=(1, -1, -1), lineColor=(1, -1, -1))
 
 def test_update(manager):
     manager.scene = Mock()

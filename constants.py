@@ -3,6 +3,12 @@
 INTERTRIAL_TEXT = "Press 'space' to initiate the next trial"
 
 EXPERIMENT_START_TEXT = "This is information about the experiment. Press 'd' to continue."
+FIXATION_CROSS = "fixation_cross.png"
+
+TRUE_KEY = 'd'
+FALSE_KEY = 'k'
+
+DUMMY_MODE = True
 
 AUDIO_DELAY = 0.2 #seconds
 
