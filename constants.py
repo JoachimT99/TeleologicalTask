@@ -23,5 +23,5 @@ MAX_FEEDBACKJITTER = 6.2 # seconds non-inclusive
 
 MAX_DECISION_TIME = 4
 
-FRAME_RATE = 144 # refreshrate of the monitor used
+FRAME_RATE = 60 # refreshrate of the monitor used
 WINDOW_SIZE = (1920, 1080)

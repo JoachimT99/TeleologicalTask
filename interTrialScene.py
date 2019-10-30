@@ -1,5 +1,5 @@
 import constants
-from psychopy import visual, event
+from psychopy import visual, event, core
 
 class InterTrialScene(object):
     def __init__(self, win, manager, text):
@@ -12,6 +12,8 @@ class InterTrialScene(object):
         keys = event.getKeys()
         if 'space' in keys:
             self._manager.set_audio_scene()
+        elif 'escape' in keys:
+            core.quit()
     
     def update(self):
         self.check_input()

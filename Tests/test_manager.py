@@ -1,5 +1,6 @@
 import pytest
 from manager import ExperimentManager
+import manager as mngr
 from interTrialScene import InterTrialScene
 from audioScene import AudioScene
 from unittest.mock import Mock, mock_open, patch, ANY
@@ -76,3 +77,16 @@ def test_update(manager):
 def test_manager_end(manager):
     manager.end_experiment()
     assert manager.isRunning == False
+
+def test_check_sequence(manager):
+    sequence = [{"type":1}, {"type":1}, {"type":1}, {"type":1}]
+
+    result = mngr.check_sequence(sequence)
+    assert result == False
+
+    sequence = [{"type":1}, {"type":1}, {"type":1}]
+
+    result = mngr.check_sequence(sequence)
+    assert result == True
+
+def test_manager_save_result(manager):
