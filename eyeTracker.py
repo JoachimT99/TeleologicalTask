@@ -4,7 +4,7 @@ from EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy
 from psychopy import visual, event
 
 class EyeTracker(object):
-    def __init__(self, win, fileName, manager):
+    def __init__(self, win, fileName, folderName, manager):
         self.win = win
         self.text = visual.TextStim(self.win, text="hello")
         self.manager = manager
@@ -12,6 +12,8 @@ class EyeTracker(object):
             self.tk = pylink.EyeLink("100.1.1.1")
         else:
             self.tk = pylink.EyeLink(None)
+        self.dataFileName = fileName
+        self.dataFolderName = folderName
         self.tk.openDataFile(fileName)
         self.tk.sendCommand("add_file_preamble_text 'Psychopy teleological task'")
         genv = EyeLinkCoreGraphicsPsychoPy(self.tk, win)
@@ -50,10 +52,44 @@ class EyeTracker(object):
         self.tk.doTrackerSetup()
         self.manager.start_experiment()
 
+    def start_recording(self):
+        self.tk.sendMessage("TRIALID")
+        self.tk.startRecording(1,1,1,1)
+
+    def stop_recording(self):
+        self.tk.stopRecording()
+    
+    def close(self):
+        self.tk.setOfflineMode()
+        self.tk.closeDataFile()
+        self.tk.receiveDataFile(self.dataFileName, self.dataFolderName + self.dataFileName)
+        self.tk.close()
+
+    def display_message(self, message):
+        self.tk.sendCommand(f"record_status_message '{message}'")
+
+    def sound_start(self):
+        self.tk.sendMessage("sound_start")
+
+    def sound_end(self):
+        self.tk.sendMessage("sound_end")
+
+    def response_start(self):
+        self.tk.sendMessage("response_start")
+
+    def response_given(self):
+        self.tk.sendMessage("response_given")
+
+    def response_end(self):
+        self.tk.sendMessage("response_end")
+
+    def feedback_start(self):
+        self.tk.sendMessage("feedback_start")
+
     def update(self):
         keys = event.getKeys()
+        print("update")
         if 'space' in keys:
-            print("update")
             self.manager.start_experiment()
 
     def draw(self):

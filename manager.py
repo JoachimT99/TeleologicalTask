@@ -16,18 +16,21 @@ class ExperimentManager(object):
     def __init__(self, win, dataFile):
         self.win = win
         self.conditions = data.importConditions(dataFile)
+        print("shuffling")
         shuffle_sequence(self.conditions)
+        print("shuffled")
         self.currentSet = 0
         self.isRunning = True
         dataFolder = os.getcwd() + '/edfData/'
         if not os.path.exists(dataFolder): 
             os.makedirs(dataFolder)
         dataFileName = "test" + '.EDF'
-        self.eyeTracker = EyeTracker(win, dataFileName, self)
-        self.scene = self.eyeTracker
         self.data = []
         self.dataDict = None
+        self.eyeTracker = EyeTracker(win, dataFileName, dataFolder, self)
+        self.scene = self.eyeTracker
         self.eyeTracker.calibrate()
+        self.responded = None
 
     def start_experiment(self):
         self.scene = InfoScene(self.win, self, constants.EXPERIMENT_START_TEXT)
@@ -36,14 +39,20 @@ class ExperimentManager(object):
         fileName = "data/"+self.conditions[self.currentSet]["wav"]
         cross = visual.ImageStim(self.win, image=constants.FIXATION_CROSS, size=(200, 200), units="pix")
         self.scene = AudioScene(self.win, self, fileName, cross)
+        self.eyeTracker.sound_start()
 
 
     def set_response_scene(self):
+        self.eyeTracker.sound_end()
         corAns = self.conditions[self.currentSet]["CorAns"]
         cross = visual.ImageStim(self.win, image=constants.FIXATION_CROSS, size=(200, 200), units="pix")
-        self.scene = ResponseScene(self.win, self, corAns, cross)
+        self.scene = ResponseScene(self.win, self, corAns, cross, self.eyeTracker)
+        self.eyeTracker.response_start()
 
     def set_feedback_scene(self, response_time, failed=False):
+        self.eyeTracker.response_end()
+        self.eyeTracker.feedback_start()
+        self.responded = True
         self.dataDict["answer"] = 0 if failed else 1
         self.dataDict["response_time"] = response_time
         color = (1, -1, -1) if failed else (-1, 1, -1)
@@ -55,6 +64,9 @@ class ExperimentManager(object):
         self.win.flip()
 
     def set_intertrial_scene(self):
+        if self.responded == False:
+            self.eyeTracker.response_end()
+        self.eyeTracker.start_recording()
         if self.dataDict is not None:
             self.data.append(self.dataDict)
         self.dataDict = {}
@@ -66,15 +78,27 @@ class ExperimentManager(object):
         self.isRunning = False
 
     def next_set(self):
-        self.currentSet += 1
-        self.set_intertrial_scene()
+        self.eyeTracker.stop_recording()
+        if self.currentSet >= len(self.conditions) - 1:
+            self.isRunning = False
+            self.eyeTracker.close()
+            if self.dataDict is not None:
+                self.data.append(self.dataDict)
+        else:
+            self.currentSet += 1
+            self.set_intertrial_scene()
 
     def save_experiment(self, writer):
-        writer.writeRows(self.data)
+        writer.writerows(self.data)
 
 def shuffle_sequence(sequence):
+    i = 0
     while not check_sequence(sequence):
         random.shuffle(sequence)
+        if i > 100000:
+            print("Could not shuffle sequence")
+            break
+        i += 1
 
 def check_sequence(sequence):
     for i, item in enumerate(sequence):
@@ -97,17 +121,17 @@ if __name__ == "__main__":
 
     subjectInfo = get_subject_info()
     window = visual.Window(constants.WINDOW_SIZE, units="pix", fullscr=True)
-    filename = f"{subjectInfo['SubjectInitials']}_.csv"       
+    filename = f"{subjectInfo['SubjectInitials']}_{subjectInfo['SubjectID']}.csv"       
     
     visual.TextStim(window, text="Eyetracker setup").draw()
     window.flip()
+    manager = ExperimentManager(window, "test.xlsx")
+
+    while manager.isRunning:
+        manager.update()
     with open(filename, mode="w") as csv_file:
         fieldNames = ["trial_number", "type", "answer", "response_time"]
         writer = csv.DictWriter(csv_file, fieldnames=fieldNames)
         writer.writeheader()
-        manager = ExperimentManager(window, "Teleological_excel__for_programmer.xlsx")
-
-        while manager.isRunning:
-            manager.update()
-
         manager.save_experiment(writer)
+

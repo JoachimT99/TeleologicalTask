@@ -5,7 +5,8 @@ import math
 import time
 
 class ResponseScene(object):
-    def __init__(self, win, manager, corAns, fixationCross):
+    def __init__(self, win, manager, corAns, fixationCross, tracker):
+        self.tracker = tracker
         self.win = win
         self.manager = manager
         self.corAns = True if corAns == 'Yes' else False
@@ -24,11 +25,13 @@ class ResponseScene(object):
             self.current_frame = 0
             self.max_frame = self.response_wait * constants.FRAME_RATE
             self.failed = self.corAns ^ True
+            self.tracker.response_given()
         elif constants.FALSE_KEY in keys and self.failed is None:
             self.elapsedTime = time.time() - self.startTime
             self.current_frame = 0
             self.max_frame = self.response_wait * constants.FRAME_RATE
             self.failed = self.corAns ^ False
+            self.tracker.response_given()
 
 
     def update(self):
