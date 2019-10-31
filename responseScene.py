@@ -5,8 +5,7 @@ import math
 import time
 
 class ResponseScene(object):
-    def __init__(self, win, manager, corAns, fixationCross, tracker):
-        self.tracker = tracker
+    def __init__(self, win, manager, corAns, fixationCross):
         self.win = win
         self.manager = manager
         self.corAns = True if corAns == 'Yes' else False
@@ -21,25 +20,28 @@ class ResponseScene(object):
     def check_input(self):
         keys = event.getKeys()
         if constants.TRUE_KEY in keys and self.failed is None:
-            self.elapsedTime = time.time() - self.startTime
-            self.current_frame = 0
-            self.max_frame = self.response_wait * constants.FRAME_RATE
             self.failed = self.corAns ^ True
-            self.tracker.response_given()
+            self.set_delay()
         elif constants.FALSE_KEY in keys and self.failed is None:
-            self.elapsedTime = time.time() - self.startTime
-            self.current_frame = 0
-            self.max_frame = self.response_wait * constants.FRAME_RATE
             self.failed = self.corAns ^ False
-            self.tracker.response_given()
+            self.set_delay()
+
+
+    def set_delay(self):
+        self.current_frame = 0
+        self.elapsedTime = time.time() - self.startTime
+        self.max_frame = self.response_wait * constants.FRAME_RATE
+        self.manager.eyeTracker.response_given()
 
 
     def update(self):
         self.current_frame += 1
         if self.current_frame >= self.max_frame and self.failed is None:
             self.manager.next_set()
+            print("%d" % (self.current_frame))
         elif self.current_frame >= self.max_frame and self.failed is not None:
             self.manager.set_feedback_scene(self.elapsedTime, failed=self.failed)
+            print("setting feedback")
         self.check_input()
         self.draw()
 

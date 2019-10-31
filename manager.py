@@ -1,7 +1,7 @@
 from interTrialScene import InterTrialScene
 import pylink
 from audioScene import AudioScene
-from psychopy import data, visual, gui, core
+from psychopy import data, visual, gui, core, event
 import constants
 from infoScene import InfoScene
 from responseScene import ResponseScene
@@ -39,14 +39,14 @@ class ExperimentManager(object):
         fileName = "data/"+self.conditions[self.currentSet]["wav"]
         cross = visual.ImageStim(self.win, image=constants.FIXATION_CROSS, size=(200, 200), units="pix")
         self.scene = AudioScene(self.win, self, fileName, cross)
-        self.eyeTracker.sound_start()
+        self.eyeTracker.fixation_cross_start()
 
 
     def set_response_scene(self):
         self.eyeTracker.sound_end()
         corAns = self.conditions[self.currentSet]["CorAns"]
         cross = visual.ImageStim(self.win, image=constants.FIXATION_CROSS, size=(200, 200), units="pix")
-        self.scene = ResponseScene(self.win, self, corAns, cross, self.eyeTracker)
+        self.scene = ResponseScene(self.win, self, corAns, cross)
         self.eyeTracker.response_start()
 
     def set_feedback_scene(self, response_time, failed=False):
@@ -66,12 +66,12 @@ class ExperimentManager(object):
     def set_intertrial_scene(self):
         if self.responded == False:
             self.eyeTracker.response_end()
-        self.eyeTracker.start_recording()
         if self.dataDict is not None:
             self.data.append(self.dataDict)
         self.dataDict = {}
-        self.dataDict["trial_number"] = self.currentSet
+        self.dataDict["trial_number"] = self.conditions[self.currentSet]["set"]
         self.dataDict["type"] = self.conditions[self.currentSet]["type"]
+        self.eyeTracker.start_recording()
         self.scene = InterTrialScene(self.win, self, constants.INTERTRIAL_TEXT)
 
     def end_experiment(self):
@@ -121,7 +121,22 @@ if __name__ == "__main__":
 
     subjectInfo = get_subject_info()
     window = visual.Window(constants.WINDOW_SIZE, units="pix", fullscr=True)
-    filename = f"{subjectInfo['SubjectInitials']}_{subjectInfo['SubjectID']}.csv"       
+
+    visual.TextStim(window, text="Practice trials").draw()
+    window.flip()
+    practice = True
+    while practice == True:
+        manager = ExperimentManager(window, "test.xlsx")
+        manager.set_feedback_scene = lambda float, failed=None: manager.next_set()
+        manager.start_experiment()
+        while manager.isRunning:
+            manager.update()
+        visual.TextStim(window, text="More practice?").draw()
+        window.flip()
+        if constants.FALSE_KEY in event.waitKeys():
+            practice = False
+
+    filename = f"{subjectInfo['SubjectInitials']}_{subjectInfo['SubjectID']}.csv"      
     
     visual.TextStim(window, text="Eyetracker setup").draw()
     window.flip()
@@ -130,7 +145,18 @@ if __name__ == "__main__":
     while manager.isRunning:
         manager.update()
     with open(filename, mode="w") as csv_file:
-        fieldNames = ["trial_number", "type", "answer", "response_time"]
+        fieldNames = ["trial_number",
+                      "type",
+                      "answer",
+                      "response_time",
+                      "trial_start",
+                      "fixation_start",
+                      "sound_start",
+                      "sound_end",
+                      "response_start",
+                      "response_given",
+                      "response_end",
+                      "feedback_start"]
         writer = csv.DictWriter(csv_file, fieldnames=fieldNames)
         writer.writeheader()
         manager.save_experiment(writer)

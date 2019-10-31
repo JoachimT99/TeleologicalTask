@@ -2,6 +2,7 @@ import constants
 import pylink
 from EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy
 from psychopy import visual, event
+from datetime import datetime
 
 class EyeTracker(object):
     def __init__(self, win, fileName, folderName, manager):
@@ -53,8 +54,9 @@ class EyeTracker(object):
         self.manager.start_experiment()
 
     def start_recording(self):
-        self.tk.sendMessage("TRIALID")
         self.tk.startRecording(1,1,1,1)
+        self.tk.sendMessage("trial_start")
+        self.manager.dataDict["trial_start"] = datetime.now()
 
     def stop_recording(self):
         self.tk.stopRecording()
@@ -70,21 +72,31 @@ class EyeTracker(object):
 
     def sound_start(self):
         self.tk.sendMessage("sound_start")
+        self.manager.dataDict["sound_start"] = datetime.now()
 
     def sound_end(self):
         self.tk.sendMessage("sound_end")
+        self.manager.dataDict["sound_end"] = datetime.now()
 
     def response_start(self):
         self.tk.sendMessage("response_start")
+        self.manager.dataDict["response_start"] = datetime.now()
 
     def response_given(self):
         self.tk.sendMessage("response_given")
+        self.manager.dataDict["response_given"] = datetime.now()
 
     def response_end(self):
         self.tk.sendMessage("response_end")
+        self.manager.dataDict["response_end"] = datetime.now()
 
     def feedback_start(self):
         self.tk.sendMessage("feedback_start")
+        self.manager.dataDict["feedback_start"] = datetime.now()
+
+    def fixation_cross_start(self):
+        self.tk.sendMessage("fixation_start")
+        self.manager.dataDict["fixation_start"] = datetime.now()
 
     def update(self):
         keys = event.getKeys()

@@ -16,6 +16,7 @@ class AudioScene(object):
         self.current_frame += 1
         if self.current_frame == self.delay_frames:
             self.sound.play()
+            self.manager.eyeTracker.sound_start()
         if self.current_frame >= self.max_frame:
             self.manager.set_response_scene()
         self.draw()
