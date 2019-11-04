@@ -5,11 +5,10 @@ from psychopy import visual, event
 from datetime import datetime
 
 class EyeTracker(object):
-    def __init__(self, win, fileName, folderName, manager):
+    def __init__(self, win, fileName, folderName, dummy=False):
         self.win = win
         self.text = visual.TextStim(self.win, text="hello")
-        self.manager = manager
-        if constants.DUMMY_MODE == False:
+        if dummy == False:
             self.tk = pylink.EyeLink("100.1.1.1")
         else:
             self.tk = pylink.EyeLink(None)
@@ -51,7 +50,6 @@ class EyeTracker(object):
             self.tk.sendCommand("file_sample_data  = LEFT,RIGHT,GAZE,AREA,GAZERES,STATUS,INPUT")
             self.tk.sendCommand("link_sample_data  = LEFT,RIGHT,GAZE,GAZERES,AREA,STATUS,INPUT")
         self.tk.doTrackerSetup()
-        self.manager.start_experiment()
 
     def start_recording(self):
         self.tk.startRecording(1,1,1,1)
@@ -97,7 +95,14 @@ class EyeTracker(object):
     def fixation_cross_start(self):
         self.tk.sendMessage("fixation_start")
         self.manager.dataDict["fixation_start"] = datetime.now()
-
+        
+    def practice_start(self):
+        self.tk.sendMessage("practice_start")
+        
+        
+    def practice_end(self):
+        self.tk.sendMessage("practice_end")
+        
     def set_manager(self, manager):
         self.manager = manager
 

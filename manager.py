@@ -11,10 +11,9 @@ import csv
 from eyeTracker import EyeTracker
 import os
 import time
-from unittest.mock import Mock
 
 class ExperimentManager(object):
-    def __init__(self, win, dataFile, tracking=False):
+    def __init__(self, win, dataFile, tracker):
         """
         Initializes experiment
         Params:
@@ -28,22 +27,16 @@ class ExperimentManager(object):
         #Fix sequnce
         self.conditions = data.importConditions(dataFile)
         shuffle_sequence(self.conditions)
-        #Sets save path for tracker
-        dataFolder = os.getcwd() + '/edfData/'
-        if not os.path.exists(dataFolder): 
-            os.makedirs(dataFolder)
-        dataFileName = "test" + '.EDF'
+        self.uniqueConditions = len(self.conditions)
         #Sets necessary variables
+        self.eyeTracker = tracker
         self.currentSet = 0
         self.isRunning = True
         self.data = []
         self.dataDict = None
         self.responded = None
         #Configures eyetracker
-        self.eyeTracker = EyeTracker(self.win, dataFileName, dataFolder, self)
         self.scene = self.eyeTracker
-        if tracking:
-            self.eyeTracker.calibrate()
 
     def start_experiment(self):
         self.scene = InfoScene(self.win, self, constants.EXPERIMENT_START_TEXT)
@@ -138,11 +131,11 @@ class ExperimentManager(object):
             self.eyeTracker.response_end()
             self.dataDict["answer"] = "NA"
             self.dataDict["response_time"] = "NA"
-            self.conditions.append(self.conditions[self.currentSet])
             self.eyeTracker.stop_recording()
+            if self.currentSet <= self.uniqueConditions - 1:
+                self.conditions.append(self.conditions[self.currentSet])
         if self.currentSet >= len(self.conditions) - 1:
             self.isRunning = False
-            self.eyeTracker.close()
             if self.dataDict is not None:
                 self.data.append(self.dataDict)
         else:
@@ -161,7 +154,7 @@ class ExperimentManager(object):
         self.responded = True
         self.next_set()
 
-    def save_experiment(self, writer):
+    def save_experiment(self, writer, id):
         """
         Saves information using a writer like object
         Params:
@@ -169,6 +162,8 @@ class ExperimentManager(object):
         Returns:
             None
         """
+        for dict in self.data:
+            dict["ID"] = id
         writer.writerows(self.data)
 
 def shuffle_sequence(sequence):
@@ -227,10 +222,18 @@ if __name__ == "__main__":
 
     visual.TextStim(window, text=constants.PRACTICE_START_TEXT).draw()
     window.flip()
-    event.waitKeys()
+    dataFolder = os.getcwd() + '/edfData/'
+    if not os.path.exists(dataFolder): 
+        os.makedirs(dataFolder)
+    dataFileName = "test" + '.EDF'
+    tracker = EyeTracker(window, dataFileName, dataFolder, dummy=constants.DUMMY_MODE)
+    tracker.calibrate()
     practice = True
+    tracker.practice_start()
     while practice == True:
-        manager = ExperimentManager(window, "test.xlsx")
+        manager = ExperimentManager(window, "test.xlsx", tracker)
+        tracker.set_manager(manager)
+        manager.start_experiment()
         manager.set_feedback_scene = manager.practice_set_feedback
         manager.start_experiment()
         while manager.isRunning:
@@ -239,15 +242,18 @@ if __name__ == "__main__":
         window.flip()
         if constants.FALSE_KEY in event.waitKeys():
             practice = False
-
-    filename = "{}_{}.csv".format(subjectInfo["SubjectInitials"], subjectInfo["SubjectID"])      
+    tracker.practice_end()
+    filename = "{}_{}.csv".format(subjectInfo["SubjectInitials"], subjectInfo["SubjectID"])
     
-    manager = ExperimentManager(window, "test.xlsx", tracking=True)
+    manager = ExperimentManager(window, "test.xlsx", tracker)
+    tracker.set_manager(manager)
+    manager.start_experiment()
 
     while manager.isRunning:
         manager.update()
     with open(filename, mode="w") as csv_file:
-        fieldNames = ["trial_number",
+        fieldNames = ["ID",
+                      "trial_number",
                       "type",
                       "answer",
                       "response_time",
@@ -261,7 +267,8 @@ if __name__ == "__main__":
                       "feedback_start"]
         writer = csv.DictWriter(csv_file, fieldnames=fieldNames)
         writer.writeheader()
-        manager.save_experiment(writer)
+        manager.save_experiment(writer, subjectInfo["SubjectID"])
+    tracker.close()
     visual.TextStim(window, text="Thank you for participating").draw()
     window.flip()
     event.waitKeys()
