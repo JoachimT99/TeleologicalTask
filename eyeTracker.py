@@ -98,6 +98,9 @@ class EyeTracker(object):
         self.tk.sendMessage("fixation_start")
         self.manager.dataDict["fixation_start"] = datetime.now()
 
+    def set_manager(self, manager):
+        self.manager = manager
+
     def update(self):
         keys = event.getKeys()
         print("update")

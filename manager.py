@@ -11,31 +11,51 @@ import csv
 from eyeTracker import EyeTracker
 import os
 import time
+from unittest.mock import Mock
 
 class ExperimentManager(object):
-    def __init__(self, win, dataFile):
+    def __init__(self, win, dataFile, tracking=False):
+        """
+        Initializes experiment
+        Params:
+            win: window object
+            dataFile: a file like object
+            tracking: determines wether or not tracker calibration is performed
+        Returns:
+            None
+        """
         self.win = win
+        #Fix sequnce
         self.conditions = data.importConditions(dataFile)
-        print("shuffling")
         shuffle_sequence(self.conditions)
-        print("shuffled")
-        self.currentSet = 0
-        self.isRunning = True
+        #Sets save path for tracker
         dataFolder = os.getcwd() + '/edfData/'
         if not os.path.exists(dataFolder): 
             os.makedirs(dataFolder)
         dataFileName = "test" + '.EDF'
+        #Sets necessary variables
+        self.currentSet = 0
+        self.isRunning = True
         self.data = []
         self.dataDict = None
-        self.eyeTracker = EyeTracker(win, dataFileName, dataFolder, self)
-        self.scene = self.eyeTracker
-        self.eyeTracker.calibrate()
         self.responded = None
+        #Configures eyetracker
+        self.eyeTracker = EyeTracker(self.win, dataFileName, dataFolder, self)
+        self.scene = self.eyeTracker
+        if tracking:
+            self.eyeTracker.calibrate()
 
     def start_experiment(self):
         self.scene = InfoScene(self.win, self, constants.EXPERIMENT_START_TEXT)
 
     def set_audio_scene(self):
+        """
+        Sets audio scene
+        Params:
+            None
+        Returns:
+            None
+        """
         fileName = "data/"+self.conditions[self.currentSet]["wav"]
         cross = visual.ImageStim(self.win, image=constants.FIXATION_CROSS, size=(200, 200), units="pix")
         self.scene = AudioScene(self.win, self, fileName, cross)
@@ -43,13 +63,28 @@ class ExperimentManager(object):
 
 
     def set_response_scene(self):
+        """
+        Sets the response scene
+        Params:
+            None
+        Returns:
+            None
+        """
         self.eyeTracker.sound_end()
+        self.responded = False
         corAns = self.conditions[self.currentSet]["CorAns"]
         cross = visual.ImageStim(self.win, image=constants.FIXATION_CROSS, size=(200, 200), units="pix")
         self.scene = ResponseScene(self.win, self, corAns, cross)
         self.eyeTracker.response_start()
 
     def set_feedback_scene(self, response_time, failed=False):
+        """
+        Sets the visual feedback scene
+        Params:
+            None
+        Returns:
+            None
+        """
         self.eyeTracker.response_end()
         self.eyeTracker.feedback_start()
         self.responded = True
@@ -60,12 +95,24 @@ class ExperimentManager(object):
         self.scene = FeedbackScene(self.win, self, feedback)
 
     def update(self):
+        """
+        Updates the scene
+        Params:
+            None
+        Returns:
+            None
+        """
         self.scene.update()
         self.win.flip()
 
     def set_intertrial_scene(self):
-        if self.responded == False:
-            self.eyeTracker.response_end()
+        """
+        Sets a blank scene to be played between trials
+        Params:
+            None
+        Returns:
+            None
+        """
         if self.dataDict is not None:
             self.data.append(self.dataDict)
         self.dataDict = {}
@@ -78,7 +125,21 @@ class ExperimentManager(object):
         self.isRunning = False
 
     def next_set(self):
+        """
+        Goes to the next trial in the list of conditions.
+        Ends the experiment if all trials have been answered.
+        Params:
+            None
+        Returns:
+            None
+        """
         self.eyeTracker.stop_recording()
+        if self.responded == False:
+            self.eyeTracker.response_end()
+            self.dataDict["answer"] = "NA"
+            self.dataDict["response_time"] = "NA"
+            self.conditions.append(self.conditions[self.currentSet])
+            self.eyeTracker.stop_recording()
         if self.currentSet >= len(self.conditions) - 1:
             self.isRunning = False
             self.eyeTracker.close()
@@ -88,10 +149,36 @@ class ExperimentManager(object):
             self.currentSet += 1
             self.set_intertrial_scene()
 
+    def practice_set_feedback(self, float, failed=None):
+        """
+        Used to bypass the feedback scene for practice trials
+        Params:
+            float: not used
+            failed: not used
+        Returns:
+            None
+        """
+        self.responded = True
+        self.next_set()
+
     def save_experiment(self, writer):
+        """
+        Saves information using a writer like object
+        Params:
+            writer: A writer like object with 'writerows' method
+        Returns:
+            None
+        """
         writer.writerows(self.data)
 
 def shuffle_sequence(sequence):
+    """
+    Randomly shuffles a sequence
+    Params:
+        sequence: A list object
+    Returns:
+        None
+    """
     i = 0
     while not check_sequence(sequence):
         random.shuffle(sequence)
@@ -101,6 +188,13 @@ def shuffle_sequence(sequence):
         i += 1
 
 def check_sequence(sequence):
+    """
+    Checks the sequence for 4 consecutive elements of the same type
+    Params:
+        sequence: a list of dicionaries with a column named type
+    Returns:
+        None
+    """
     for i, item in enumerate(sequence):
         if i < 3:
             continue
@@ -110,37 +204,45 @@ def check_sequence(sequence):
 
 
 def get_subject_info():
-        info = {"SubjectID":"00", "SubjectInitials":"TEST"}
-        dlg = gui.DlgFromDict(dictionary=info, title="Enter relevant information", order=("SubjectID", "SubjectInitials"))
-        if not dlg.OK:
-            core.quit()
-        else:
-            return info
+    """
+    Presents dialogue box to get subject information
+    Params:
+        None
+    Returns:
+        dictionary with subject information
+    """
+    info = {"SubjectID":"00", "SubjectInitials":"TEST"}
+    dlg = gui.DlgFromDict(dictionary=info, title="Enter relevant information", order=("SubjectID", "SubjectInitials"))
+    if not dlg.OK:
+        core.quit()
+    else:
+        return info
 
+
+#Starting point of experiment
 if __name__ == "__main__":
 
     subjectInfo = get_subject_info()
     window = visual.Window(constants.WINDOW_SIZE, units="pix", fullscr=True)
 
-    visual.TextStim(window, text="Practice trials").draw()
+    visual.TextStim(window, text=constants.PRACTICE_START_TEXT).draw()
     window.flip()
+    event.waitKeys()
     practice = True
     while practice == True:
         manager = ExperimentManager(window, "test.xlsx")
-        manager.set_feedback_scene = lambda float, failed=None: manager.next_set()
+        manager.set_feedback_scene = manager.practice_set_feedback
         manager.start_experiment()
         while manager.isRunning:
             manager.update()
-        visual.TextStim(window, text="More practice?").draw()
+        visual.TextStim(window, text=constants.PRACTICE_END_TEXT).draw()
         window.flip()
         if constants.FALSE_KEY in event.waitKeys():
             practice = False
 
     filename = "{}_{}.csv".format(subjectInfo["SubjectInitials"], subjectInfo["SubjectID"])      
     
-    visual.TextStim(window, text="Eyetracker setup").draw()
-    window.flip()
-    manager = ExperimentManager(window, "test.xlsx")
+    manager = ExperimentManager(window, "test.xlsx", tracking=True)
 
     while manager.isRunning:
         manager.update()
@@ -160,4 +262,7 @@ if __name__ == "__main__":
         writer = csv.DictWriter(csv_file, fieldnames=fieldNames)
         writer.writeheader()
         manager.save_experiment(writer)
+    visual.TextStim(window, text="Thank you for participating").draw()
+    window.flip()
+    event.waitKeys()
 
