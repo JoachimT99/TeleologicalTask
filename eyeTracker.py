@@ -14,8 +14,6 @@ class EyeTracker(object):
             self.tk = pylink.EyeLink(None)
         self.dataFileName = fileName
         self.dataFolderName = folderName
-        self.tk.openDataFile(fileName)
-        self.tk.sendCommand("add_file_preamble_text 'Psychopy teleological task'")
         genv = EyeLinkCoreGraphicsPsychoPy(self.tk, win)
         pylink.openGraphicsEx(genv)
 
@@ -51,19 +49,27 @@ class EyeTracker(object):
             self.tk.sendCommand("link_sample_data  = LEFT,RIGHT,GAZE,GAZERES,AREA,STATUS,INPUT")
         self.tk.doTrackerSetup()
 
-    def start_recording(self):
+    def start_recording(self, trial_number):
         self.tk.startRecording(1,1,1,1)
-        self.tk.sendMessage("trial_start")
+        self.tk.sendMessage("trial_start {}".format(trial_number))
         self.manager.dataDict["trial_start"] = datetime.now()
 
     def stop_recording(self):
         self.tk.stopRecording()
     
-    def close(self):
+    def close_tracker(self):
         self.tk.setOfflineMode()
         self.tk.closeDataFile()
         self.tk.receiveDataFile(self.dataFileName, self.dataFolderName + self.dataFileName)
         self.tk.close()
+
+    def open_file(self, fileName):
+        self.tk.openDataFile(fileName)
+        self.tk.sendCommand("add_file_preamble_text 'Psychopy teleological task'")
+
+    def close_dataFile(self, fileName, folderName):
+        self.tk.closeDataFile()
+        self.tk.receiveDataFile(fileName, folderName + fileName)
 
     def display_message(self, message):
         self.tk.sendCommand("record_status_message '{}'".format(message))

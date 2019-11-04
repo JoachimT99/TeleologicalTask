@@ -111,7 +111,7 @@ class ExperimentManager(object):
         self.dataDict = {}
         self.dataDict["trial_number"] = self.conditions[self.currentSet]["set"]
         self.dataDict["type"] = self.conditions[self.currentSet]["type"]
-        self.eyeTracker.start_recording()
+        self.eyeTracker.start_recording(self.currentSet)
         self.scene = InterTrialScene(self.win, self, constants.INTERTRIAL_TEXT)
 
     def end_experiment(self):
@@ -218,20 +218,20 @@ def get_subject_info():
 if __name__ == "__main__":
 
     subjectInfo = get_subject_info()
-    window = visual.Window(constants.WINDOW_SIZE, units="pix", fullscr=True)
+    window = constants.WINDOW
 
     visual.TextStim(window, text=constants.PRACTICE_START_TEXT).draw()
     window.flip()
     dataFolder = os.getcwd() + '/edfData/'
     if not os.path.exists(dataFolder): 
         os.makedirs(dataFolder)
-    dataFileName = "test" + '.EDF'
+    dataFileName = constants.EDF_FILENAME + '.EDF'
     tracker = EyeTracker(window, dataFileName, dataFolder, dummy=constants.DUMMY_MODE)
     tracker.calibrate()
     practice = True
     tracker.practice_start()
     while practice == True:
-        manager = ExperimentManager(window, "test.xlsx", tracker)
+        manager = ExperimentManager(window, constants.PRACTICE_TRIALS, tracker)
         tracker.set_manager(manager)
         manager.start_experiment()
         manager.set_feedback_scene = manager.practice_set_feedback
@@ -245,7 +245,8 @@ if __name__ == "__main__":
     tracker.practice_end()
     filename = "{}_{}.csv".format(subjectInfo["SubjectInitials"], subjectInfo["SubjectID"])
     
-    manager = ExperimentManager(window, "test.xlsx", tracker)
+    manager = ExperimentManager(window, constants.TRIALS, tracker)
+    tracker.open_file(dataFileName)
     tracker.set_manager(manager)
     manager.start_experiment()
 
@@ -268,8 +269,9 @@ if __name__ == "__main__":
         writer = csv.DictWriter(csv_file, fieldnames=fieldNames)
         writer.writeheader()
         manager.save_experiment(writer, subjectInfo["SubjectID"])
-    tracker.close()
-    visual.TextStim(window, text="Thank you for participating").draw()
+    tracker.close_dataFile(dataFileName, dataFolder)
+    tracker.close_tracker()
+    visual.TextStim(window, text=constants.END_TEXT).draw()
     window.flip()
     event.waitKeys()
 
