@@ -68,7 +68,7 @@ class EyeTracker(object):
         self.tk.close()
 
     def display_message(self, message):
-        self.tk.sendCommand(f"record_status_message '{message}'")
+        self.tk.sendCommand("record_status_message '{}'".format(message))
 
     def sound_start(self):
         self.tk.sendMessage("sound_start")

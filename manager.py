@@ -136,7 +136,7 @@ if __name__ == "__main__":
         if constants.FALSE_KEY in event.waitKeys():
             practice = False
 
-    filename = f"{subjectInfo['SubjectInitials']}_{subjectInfo['SubjectID']}.csv"      
+    filename = "{}_{}.csv".format(subjectInfo["SubjectInitials"], subjectInfo["SubjectID"])      
     
     visual.TextStim(window, text="Eyetracker setup").draw()
     window.flip()
