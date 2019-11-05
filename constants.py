@@ -3,8 +3,6 @@ from psychopy import visual
 FRAME_RATE = 60 # refreshrate of the monitor used
 WINDOW_SIZE = (1280, 1024)
 
-WINDOW = visual.Window(WINDOW_SIZE, units="pix", fullscr=True)
-
 
 INTERTRIAL_TEXT = "Press 'space' to initiate the next trial"
 
@@ -23,11 +21,8 @@ PRACTICE_TRIALS = "test.xlsx"
 TRIALS = "test.xlsx"
 EDF_FILENAME = "test"
 
-NEG_FEEDBACK = visual.Rect(WINDOW, width=200, height=200, fillColor=(1, -1, -1), lineColor=(1, -1, -1))
-POS_FEEDBACK = visual.Rect(WINDOW, width=200, height=200, fillColor=(-1, 1, -1), lineColor=(-1, 1, -1))
 
-
-DUMMY_MODE = True
+DUMMY_MODE = False
 
 AUDIO_DELAY = 0.2 #seconds
 

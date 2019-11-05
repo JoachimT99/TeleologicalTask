@@ -2,7 +2,6 @@ from interTrialScene import InterTrialScene
 import pylink
 from audioScene import AudioScene
 from psychopy import data, visual, gui, core, event
-import constants
 from infoScene import InfoScene
 from responseScene import ResponseScene
 from feedbackScene import FeedbackScene
@@ -11,6 +10,7 @@ import csv
 from eyeTracker import EyeTracker
 import os
 import time
+import constants
 
 class ExperimentManager(object):
     def __init__(self, win, dataFile, tracker):
@@ -218,7 +218,10 @@ def get_subject_info():
 if __name__ == "__main__":
 
     subjectInfo = get_subject_info()
-    window = constants.WINDOW
+    
+        
+    window = visual.Window(constants.WINDOW_SIZE, units="pix", fullscr=True)
+
 
     visual.TextStim(window, text=constants.PRACTICE_START_TEXT).draw()
     window.flip()
