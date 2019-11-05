@@ -277,4 +277,3 @@ if __name__ == "__main__":
     visual.TextStim(window, text=constants.END_TEXT).draw()
     window.flip()
     event.waitKeys()
-
