@@ -7,7 +7,6 @@ WINDOW_SIZE = (1280, 1024)
 INTERTRIAL_TEXT = "Press 'space' to initiate the next trial"
 
 EXPERIMENT_START_TEXT = "This is information about the experiment. Press 'd' to continue."
-FIXATION_CROSS = "fixation_cross.png"
 
 PRACTICE_START_TEXT = "Practice trials. Press 'enter' to calibrate or 'escape' to exit"
 PRACTICE_END_TEXT = "Do you want to redo the practice trials? Press 'd' for yes and 'k' for no"
@@ -18,11 +17,14 @@ TRUE_KEY = 'd'
 FALSE_KEY = 'k'
 
 PRACTICE_TRIALS = "test.xlsx"
-TRIALS = "test.xlsx"
+TRIALS = "Teleological_excel__for_programmer.xlsx"
 EDF_FILENAME = "test"
 
+FIXATION_CROSS = "FixCross.png"
+NEG_FEEDBACK = "negFeedback.png"
+POS_FEEDBACK = "posFeedback.png"
 
-DUMMY_MODE = False
+DUMMY_MODE = True
 
 AUDIO_DELAY = 0.2 #seconds
 

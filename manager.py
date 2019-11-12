@@ -83,8 +83,10 @@ class ExperimentManager(object):
         self.responded = True
         self.dataDict["answer"] = 0 if failed else 1
         self.dataDict["response_time"] = response_time
-        color = (1, -1, -1) if failed else (-1, 1, -1)
-        feedback = visual.Rect(self.win, width=200, height=200, fillColor=color, lineColor=color)
+        if failed:
+            feedback = visual.ImageStim(self.win, image=constants.NEG_FEEDBACK, size=(200, 200), units="pix")
+        else:
+            feedback = visual.ImageStim(self.win, image=constants.POS_FEEDBACK, size=(200, 200), units="pix")
         self.scene = FeedbackScene(self.win, self, feedback)
 
     def update(self):
@@ -231,21 +233,21 @@ if __name__ == "__main__":
     dataFileName = constants.EDF_FILENAME + '.EDF'
     tracker = EyeTracker(window, dataFileName, dataFolder, dummy=constants.DUMMY_MODE)
     tracker.calibrate()
-    practice = True
-    tracker.practice_start()
-    while practice == True:
-        manager = ExperimentManager(window, constants.PRACTICE_TRIALS, tracker)
-        tracker.set_manager(manager)
-        manager.start_experiment()
-        manager.set_feedback_scene = manager.practice_set_feedback
-        manager.start_experiment()
-        while manager.isRunning:
-            manager.update()
-        visual.TextStim(window, text=constants.PRACTICE_END_TEXT).draw()
-        window.flip()
-        if constants.FALSE_KEY in event.waitKeys():
-            practice = False
-    tracker.practice_end()
+    # practice = True
+    # tracker.practice_start()
+    # while practice == True:
+    #     manager = ExperimentManager(window, constants.PRACTICE_TRIALS, tracker)
+    #     tracker.set_manager(manager)
+    #     manager.start_experiment()
+    #     manager.set_feedback_scene = manager.practice_set_feedback
+    #     manager.start_experiment()
+    #     while manager.isRunning:
+    #         manager.update()
+    #     visual.TextStim(window, text=constants.PRACTICE_END_TEXT).draw()
+    #     window.flip()
+    #     if constants.FALSE_KEY in event.waitKeys():
+    #         practice = False
+    # tracker.practice_end()
     filename = "{}_{}.csv".format(subjectInfo["SubjectInitials"], subjectInfo["SubjectID"])
     
     manager = ExperimentManager(window, constants.TRIALS, tracker)
